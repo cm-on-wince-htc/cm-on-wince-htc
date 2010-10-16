@@ -190,7 +190,6 @@ int nval_list(const char *xb, int xb_size, char *buf, int bsize)
 	return ncopied;
 }
 
-#if 0
 int nval_load(char *xb, int xb_size, const char *src, int src_size)
 {
 	int tx_size;
@@ -218,11 +217,4 @@ int nval_save(const char *xb, int xb_size, char *dest, int dest_size)
 
 	memcpy(dest,xb,tx_size);
 	return tx_size;
-}
-#endif
-
-
-int nval_hasvalues(const char *xb, int xb_size)
-{
-	return nval_used(xb, xb_size) > 0;
 }
