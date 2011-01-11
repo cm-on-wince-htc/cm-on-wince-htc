@@ -13,6 +13,11 @@ endif
 params_phys-$(CONFIG_ARCH_QSD8X50)		:= 0x20000100
 initrd_phys-$(CONFIG_ARCH_QSD8X50)		:= 0x21000000
 
+# override for HTC Leo
+  zreladdr-$(CONFIG_MACH_HTCLEO)		:= 0x11808000
+params_phys-$(CONFIG_MACH_HTCLEO)		:= 0x11800100
+initrd_phys-$(CONFIG_MACH_HTCLEO)		:= 0x12200000
+
   zreladdr-$(CONFIG_ARCH_MSM7X30)		:= 0x00208000
 params_phys-$(CONFIG_ARCH_MSM7X30)		:= 0x00200100
 initrd_phys-$(CONFIG_ARCH_MSM7X30)		:= 0x01200000

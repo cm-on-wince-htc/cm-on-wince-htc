@@ -62,6 +62,14 @@
 #define MSM_GPIO2_PHYS        0xA9100000
 #define MSM_GPIO2_SIZE        SZ_4K
 
+#define MSM_GPIOCFG1_BASE     IOMEM(0xF9004000)
+#define MSM_GPIOCFG1_PHYS     0xA8E00000
+#define MSM_GPIOCFG1_SIZE     SZ_4K
+
+#define MSM_GPIOCFG2_BASE     IOMEM(0xF9005000)
+#define MSM_GPIOCFG2_PHYS     0xA8F00000
+#define MSM_GPIOCFG2_SIZE     SZ_4K
+
 #define MSM_CLK_CTL_BASE      IOMEM(0xF8005000)
 #define MSM_CLK_CTL_PHYS      0xA8600000
 #define MSM_CLK_CTL_SIZE      SZ_4K
@@ -166,5 +174,13 @@
 
 #define MSM_SPI_PHYS          0xA1200000
 #define MSM_SPI_SIZE          SZ_4K
+
+// Originally this does not need to be defined,
+// but is required to make early_ramconsole work.
+// These values must match the values used in
+// the defconfig.
+#define MSM_RAM_CONSOLE_BASE	IOMEM(0xF9100000)
+#define MSM_RAM_CONSOLE_PHYS	0x2FFC0000
+#define MSM_RAM_CONSOLE_SIZE	0x00040000
 
 #endif
