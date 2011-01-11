@@ -1409,7 +1409,11 @@ static void __init sapphire_fixup(struct machine_desc *desc, struct tag *tags,
 			break;
 		}
 	} else if (smi_sz == 64) {
-                mi->bank[0].size = SMI64_MSM_LINUX_SIZE;        //(101*1024*1024);
+		mi->nr_banks = 2;
+		mi->bank[0].size = SMI64_MSM_LINUX_SIZE;	//(101*1024*1024);
+		mi->bank[1].start = SMI64_MSM_LINUX2_BASE;
+		mi->bank[1].size = SMI64_MSM_LINUX2_SIZE;
+		mi->bank[1].node = PHYS_TO_NID(SMI64_MSM_LINUX2_BASE);
 	} else {
 		printk(KERN_ERR "can not get smi size\n");
 
@@ -1438,7 +1442,11 @@ MACHINE_START(SAPPHIRE, "sapphire")
 #if defined(CONFIG_MSM_AMSS_SUPPORT_256MB_EBI1)
         .boot_params    = 0x19200100,
 #else
+#if defined(CONFIG_MSM_AMSS_RADIO2708_MEMMAP)
+	.boot_params    = 0x02000100,
+#else
 	.boot_params    = 0x10000100,
+#endif
 #endif
 	.fixup          = sapphire_fixup,
 	.map_io         = sapphire_map_io,
