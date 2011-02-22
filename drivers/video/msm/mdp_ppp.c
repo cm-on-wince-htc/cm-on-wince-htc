@@ -275,6 +275,7 @@ static void blit_blend(struct mdp_blit_req *req, struct ppp_regs *regs)
 	req->alpha &= 0xff;
 	/* ALPHA BLEND */
 	if (HAS_ALPHA(req->src.format)) {
+#if !defined(CONFIG_MACH_HTCLEO)	
 		regs->op |= PPP_OP_ROT_ON | PPP_OP_BLEND_ON;
 		if (req->flags & MDP_BLEND_FG_PREMULT) {
 #ifdef CONFIG_MSM_MDP31
@@ -291,6 +292,10 @@ static void blit_blend(struct mdp_blit_req *req, struct ppp_regs *regs)
 		} else {
 			regs->op |= PPP_OP_BLEND_SRCPIXEL_ALPHA;
 		}
+#else
+		regs->op |= PPP_OP_ROT_ON | PPP_OP_BLEND_ON;
+		regs->op |= PPP_OP_BLEND_SRCPIXEL_ALPHA;
+#endif
 	} else if (req->alpha < MDP_ALPHA_NOP) {
 		/* just blend by alpha */
 		regs->op |= PPP_OP_ROT_ON | PPP_OP_BLEND_ON |
@@ -510,6 +515,9 @@ static int send_blit(const struct mdp_info *mdp, struct mdp_blit_req *req,
 		mdp_writel_dbg(mdp, regs->bg_img_sz, MDP_PPP_BG_IMAGE_SIZE);
 		mdp_writel_dbg(mdp, regs->bg_alpha_sel,
 			       MDP_PPP_BLEND_BG_ALPHA_SEL);
+#if defined(CONFIG_MACH_HTCLEO)
+      		mdp_writel_dbg(mdp, 0, MDP_TFETCH_TEST_MODE);
+#endif
 #endif
 	}
 	flush_imgs(req, regs, src_file, dst_file);

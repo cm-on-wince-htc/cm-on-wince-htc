@@ -76,6 +76,7 @@
  */
 	__HEAD
 ENTRY(stext)
+
 	setmode	PSR_F_BIT | PSR_I_BIT | SVC_MODE, r9 @ ensure svc mode
 						@ and irqs disabled
 	mrc	p15, 0, r9, c0, c0		@ get processor id
@@ -118,7 +119,6 @@ ENTRY(secondary_startup)
 	movs	r10, r5				@ invalid processor?
 	moveq	r0, #'p'			@ yes, error 'p'
 	beq	__error
-
 	/*
 	 * Use the page tables supplied from  __cpu_up.
 	 */
@@ -158,6 +158,16 @@ __secondary_data:
  * registers.
  */
 __enable_mmu:
+
+/*
+	MOV	R3, #0xA9000000
+	ORR	R3, R3, #0x800
+	ORR	R3, R3, #0x00C
+	LDR	R1, [R3]
+	ORR	R1, R1, #0x20
+	STR	R1, [R3]
+*/
+
 #ifdef CONFIG_ALIGNMENT_TRAP
 	orr	r0, r0, #CR_A
 #else
@@ -179,6 +189,7 @@ __enable_mmu:
 	mcr	p15, 0, r5, c3, c0, 0		@ load domain access register
 	mcr	p15, 0, r4, c2, c0, 0		@ load page table pointer
 	b	__turn_mmu_on
+
 ENDPROC(__enable_mmu)
 
 /*
@@ -288,7 +299,14 @@ __create_page_tables:
 	.endif
 	str	r6, [r0]
 
-#ifdef CONFIG_DEBUG_LL
+// HTC LEO test code
+	add 	r0, r4, #0xf0000000 >> 18
+	orr 	r3, r7, #0x20000000
+	str 	r3, [r0]
+
+
+//#ifdef CONFIG_DEBUG_LL
+#if 0
 	ldr	r7, [r10, #PROCINFO_IO_MMUFLAGS] @ io_mmuflags
 	/*
 	 * Map in IO space for serial debugging.
@@ -316,6 +334,20 @@ __create_page_tables:
 	orr	r3, r7, #0x7c000000
 	str	r3, [r0]
 #endif
+
+#ifdef CONFIG_MACH_HTCLEO
+	 /*
+	 *	I small life sign test for HTC Leo 
+	 *	We mapping the addresses for the vibration GPIO
+	 */
+#if 0
+	add 	r0, r4, #0xff000000 >> 18
+//	orr 	r3, r7, #0xA9000000
+	orr 	r3, r7, #0x20000000
+	str 	r3, [r0]
+#endif
+#endif
+
 #ifdef CONFIG_ARCH_RPC
 	/*
 	 * Map in screen at 0x02000000 & SCREEN2_BASE

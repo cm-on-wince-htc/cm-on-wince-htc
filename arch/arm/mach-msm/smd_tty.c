@@ -20,12 +20,14 @@
 #include <linux/device.h>
 #include <linux/wait.h>
 #include <linux/wakelock.h>
+#include <linux/delay.h>
 
 #include <linux/tty.h>
 #include <linux/tty_driver.h>
 #include <linux/tty_flip.h>
 
 #include <mach/msm_smd.h>
+#include "board-htcleo.h"
 
 #define MAX_SMD_TTYS 32
 
@@ -42,6 +44,7 @@ static struct smd_tty_info smd_tty[MAX_SMD_TTYS];
 
 static const struct smd_tty_channel_desc smd_default_tty_channels[] = {
 	{ .id = 0, .name = "SMD_DS" },
+	{ .id = 1, .name = "SMD_DATA1" },
 	{ .id = 27, .name = "SMD_GPSNMEA" },
 };
 
@@ -99,7 +102,7 @@ static int smd_tty_open(struct tty_struct *tty, struct file *f)
 	struct smd_tty_info *info;
 	const char *name = NULL;
 	int i;
-
+	
 	for (i = 0; i < smd_tty_channels_len; i++) {
 		if (smd_tty_channels[i].id == n) {
 			name = smd_tty_channels[i].name;
@@ -151,8 +154,25 @@ static void smd_tty_close(struct tty_struct *tty, struct file *f)
 static int smd_tty_write(struct tty_struct *tty, const unsigned char *buf, int len)
 {
 	struct smd_tty_info *info = tty->driver_data;
-	int avail;
-
+	int avail, ret, runfix=0;
+	static int init=0;
+	const unsigned char* firstcall="AT@BRIC=0\r";
+	const unsigned char* secondcall="AT+COPS=2\r";
+	unsigned int call_len;
+// 	
+	if(len>7 && !init && htcleo_is_nand_boot()) {
+		if(strncmp(buf, "AT+CFUN", 7)==0) {
+			pr_info("SMD AT FIX!\n");
+			call_len = strlen(firstcall);
+			avail = smd_write_avail(info->ch);
+			if (call_len > avail)
+				call_len = avail;
+			ret = smd_write(info->ch, firstcall, call_len);
+			init=1;
+			runfix=1;
+			msleep(100);
+		}
+	}
 	/* if we're writing to a packet channel we will
 	** never be able to write more data than there
 	** is currently space for
@@ -160,8 +180,19 @@ static int smd_tty_write(struct tty_struct *tty, const unsigned char *buf, int l
 	avail = smd_write_avail(info->ch);
 	if (len > avail)
 		len = avail;
-
-	return smd_write(info->ch, buf, len);
+	
+	ret = smd_write(info->ch, buf, len);
+	
+	if(runfix) {
+			msleep(100);
+			pr_info("SMD AT FIX2!\n");
+			call_len = strlen(secondcall);
+			avail = smd_write_avail(info->ch);
+			if (call_len > avail)
+				call_len = avail;
+			ret = smd_write(info->ch, secondcall, call_len);
+	}
+	return ret;
 }
 
 static int smd_tty_write_room(struct tty_struct *tty)
@@ -219,10 +250,8 @@ static int __init smd_tty_init(void)
 
 	ret = tty_register_driver(smd_tty_driver);
 	if (ret) return ret;
-
 	for (i = 0; i < smd_tty_channels_len; i++)
 		tty_register_device(smd_tty_driver, smd_tty_channels[i].id, 0);
-
 	return 0;
 }
 

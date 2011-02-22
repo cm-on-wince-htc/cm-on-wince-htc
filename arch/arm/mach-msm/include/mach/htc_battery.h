@@ -19,6 +19,13 @@
 #define BATT_EVENT_SUSPEND	0x01
 
 #define CHECK_CHG           0X64
+#define SET_ICL500		0X65
+#define SET_ICL100		0X66
+#define CHECK_INT2		0X67
+#define OVERTEMP_VREG_4060	0XC8
+#define NORMALTEMP_VREG_4200	0XC9
+#define CHECK_INT1		0XCA
+#define CHECK_CONTROL           0xCB
 /* information about the system we're running on */
 extern unsigned int system_rev;
 
@@ -42,6 +49,7 @@ enum {
 	GUAGE_NONE,
 	GUAGE_MODEM,
 	GUAGE_DS2784,
+	GUAGE_DS2746,
 };
 
 enum {
@@ -62,6 +70,13 @@ struct battery_info_reply {
 	u32 over_vchg;		/* 0:normal, 1:over voltage charger */
 	s32 eval_current;	/* System loading current from ADC */
 };
+
+struct htc_battery_tps65200_int {
+	int chg_int;
+	int tps65200_reg;
+	struct delayed_work int_work;
+};
+
 struct htc_battery_platform_data {
 	int (*func_show_batt_attr)(struct device_attribute *attr,
 					 char *buf);
@@ -69,9 +84,12 @@ struct htc_battery_platform_data {
 	int gpio_usb_id;
 	int gpio_mchg_en_n;
 	int gpio_iset;
+	int gpio_power;
 	int guage_driver;
 	int m2a_cable_detect;
 	int charger;
+	struct htc_battery_tps65200_int int_data;
+	int force_no_rpc;
 };
 
 #if CONFIG_HTC_BATTCHG
@@ -85,7 +103,7 @@ static int unregister_notifier_cable_status(struct notifier_block *nb) { return 
 #ifdef CONFIG_BATTERY_DS2784
 extern int battery_charging_ctrl(enum batt_ctl_t ctl);
 #endif
-
+extern int get_cable_status(void);
 #ifdef CONFIG_HTC_BATTCHG
 extern int batt_register_client(struct notifier_block *nb);
 extern int batt_unregister_client(struct notifier_block *nb);
