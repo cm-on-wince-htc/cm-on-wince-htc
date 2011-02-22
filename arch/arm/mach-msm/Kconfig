@@ -26,7 +26,6 @@ config ARCH_QSD8X50
 	select MSM_SMD
 	select CPU_V7
 	select MSM_REMOTE_SPINLOCK_LDREX
-	select MSM_DAL
 	select VERIFY_PERMISSION_FAULT
 endchoice
 
