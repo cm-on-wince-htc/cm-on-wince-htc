@@ -125,7 +125,6 @@ static int lcdc_hw_init(struct mdp_lcdc_info *lcdc)
 	clk_set_rate(lcdc->pclk, lcdc->parms.clk_rate);
 	clk_set_rate(lcdc->pad_pclk, lcdc->parms.clk_rate);
 
-#ifndef CONFIG_MACH_HTCLEO
 	/* write the lcdc params */
 	mdp_writel(lcdc->mdp, lcdc->parms.hsync_ctl, MDP_LCDC_HSYNC_CTL);
 	mdp_writel(lcdc->mdp, lcdc->parms.vsync_period, MDP_LCDC_VSYNC_PERIOD);
@@ -153,11 +152,20 @@ static int lcdc_hw_init(struct mdp_lcdc_info *lcdc)
 	mdp_writel(lcdc->mdp, 0, MDP_DMA_P_OUT_XY);
 
 	dma_cfg = mdp_readl(lcdc->mdp, MDP_DMA_P_CONFIG);
+#if defined(CONFIG_MACH_HTCLEO)
+	dma_cfg |= (DMA_PACK_ALIGN_MSB |
+		   DMA_PACK_PATTERN_RGB);
+	dma_cfg |= DMA_OUT_SEL_LCDC;
+	dma_cfg |= DMA_IBUF_FORMAT_RGB565;
+	dma_cfg &= ~DMA_DITHER_EN;
+	dma_cfg &= ~DMA_DST_BITS_MASK;
+#else
 	dma_cfg |= (DMA_PACK_ALIGN_LSB |
 		   DMA_PACK_PATTERN_RGB |
 		   DMA_DITHER_EN);
 	dma_cfg |= DMA_OUT_SEL_LCDC;
 	dma_cfg &= ~DMA_DST_BITS_MASK;
+#endif
 
 	if (fb_panel->fb_data->output_format == MSM_MDP_OUT_IF_FMT_RGB666)
 		dma_cfg |= DMA_DSTC0G_6BITS | DMA_DSTC1B_6BITS | DMA_DSTC2R_6BITS;
@@ -168,7 +176,7 @@ static int lcdc_hw_init(struct mdp_lcdc_info *lcdc)
 
 	/* enable the lcdc timing generation */
 	mdp_writel(lcdc->mdp, 1, MDP_LCDC_EN);
-#endif
+
 	return 0;
 }
 

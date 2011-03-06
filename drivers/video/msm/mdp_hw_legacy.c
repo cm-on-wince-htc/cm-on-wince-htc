@@ -102,7 +102,7 @@ int mdp_hw_init(struct mdp_info *mdp)
 
 #ifndef CONFIG_MSM_MDP22
 	/* disable lcdc */
-	mdp_writel(mdp, 0, MDP_LCDC_EN);
+//	mdp_writel(mdp, 0, MDP_LCDC_EN);
 	/* enable auto clock gating for all blocks by default */
 	mdp_writel(mdp, 0xffffffff, MDP_CGC_EN);
 	/* reset color/gamma correct parms */
@@ -141,7 +141,6 @@ int mdp_hw_init(struct mdp_info *mdp)
 	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01dc);
 	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01e0);
 	mdp_writel(mdp, 0, MDP_CMD_DEBUG_ACCESS_BASE + 0x01e4);
-
 	for (n = 0; n < ARRAY_SIZE(csc_matrix_config_table); n++)
 		mdp_writel(mdp, csc_matrix_config_table[n].val,
 			   csc_matrix_config_table[n].reg);

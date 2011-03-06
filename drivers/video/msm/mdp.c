@@ -502,7 +502,9 @@ int mdp_probe(struct platform_device *pdev)
 	clk_enable(mdp->clk);
 	if (mdp->pclk)
 		clk_enable(mdp->pclk);
+
 	mdp_hw_init(mdp);
+
 
 	/* register mdp device */
 	mdp->mdp_dev.dev.parent = &pdev->dev;
